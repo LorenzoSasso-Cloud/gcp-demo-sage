@@ -32,10 +32,13 @@ def ingest_file(path: Path) -> int:
     text = path.read_text(encoding="utf-8")
     chunks = split_into_chunks(text, max_chars=config.chunk_max_chars)
 
+    # Embeddings first: if Vertex AI fails midway (e.g. 429), the document's existing chunks
+    # are still intact in Firestore and the script can simply be re-run.
+    embeddings = [embed_text(chunk.text, "RETRIEVAL_DOCUMENT") for chunk in chunks]
+
     delete_chunks_for_source(source)
 
-    for chunk in chunks:
-        embedding = embed_text(chunk.text)
+    for chunk, embedding in zip(chunks, embeddings, strict=True):
         add_chunk(
             chunk_id=f"{source}-{chunk.chunk_index}",
             text=chunk.text,

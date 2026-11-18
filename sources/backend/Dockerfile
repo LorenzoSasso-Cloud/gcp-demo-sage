@@ -19,4 +19,6 @@ RUN uv sync --frozen --no-dev
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["sh", "-c", "uv run uvicorn sage.webapp.app:app --host 0.0.0.0 --port ${PORT}"]
+# Si avvia uvicorn direttamente dal virtualenv: `uv run` reinstallerebbe le dipendenze di
+# sviluppo a ogni avvio a freddo. `exec` gli fa ricevere il SIGTERM inviato da Cloud Run.
+CMD ["sh", "-c", "exec .venv/bin/uvicorn sage.webapp.app:app --host 0.0.0.0 --port ${PORT}"]
