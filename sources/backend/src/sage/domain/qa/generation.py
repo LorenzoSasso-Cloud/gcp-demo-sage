@@ -48,7 +48,7 @@ async def generate_answer(
 
     try:
         answer = await generate_text(prompt)
-    except (APIError, httpx.HTTPError) as exc:
+    except (APIError, httpx.HTTPError, TimeoutError) as exc:
         log.exception("Chiamata al modello fallita")
         raise GenerationError("Servizio di generazione non disponibile") from exc
 
